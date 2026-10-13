@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../core/constants/app_strings.dart';
+
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
@@ -23,14 +25,14 @@ class HomeScreen extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         children: [
           Text(
-            'Salama ! 👋',
+            AppStrings.welcome,
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Prêt à apprendre une nouvelle langue ?',
+            AppStrings.learningSubtitle,
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   color: Colors.grey.shade600,
                 ),
@@ -49,21 +51,18 @@ class HomeScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Ton prochain défi',
+                    AppStrings.dailyChallenge,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    'Pratique une langue avec tes amis '
-                    'et progresse chaque jour.',
-                  ),
+                  const Text(AppStrings.dailyChallengeDescription),
                   const SizedBox(height: 16),
                   FilledButton.icon(
                     onPressed: () {},
                     icon: const Icon(Icons.play_arrow_rounded),
-                    label: const Text('Commencer'),
+                    label: const Text(AppStrings.start),
                   ),
                 ],
               ),

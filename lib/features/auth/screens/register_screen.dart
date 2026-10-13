@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -18,6 +19,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   bool _hidePassword = true;
   bool _hideConfirmPassword = true;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -28,18 +30,105 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
-  void _register() {
+  Future<void> _register() async {
     if (!_formKey.currentState!.validate()) {
+      debugPrint('[SIGNUP] Formulaire invalide');
       return;
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Le formulaire est valide. L’inscription Supabase arrive ensuite.',
+    debugPrint('[SIGNUP] Formulaire valide');
+    debugPrint('[SIGNUP] Début de la requête Supabase');
+
+    setState(() => _isLoading = true);
+
+    try {
+      final response = await Supabase.instance.client.auth.signUp(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+        data: {
+          'full_name': _nameController.text.trim(),
+        },
+      );
+
+      debugPrint('[SIGNUP] Requête terminée');
+      debugPrint('[SIGNUP] User ID : ${response.user?.id}');
+      debugPrint(
+        '[SIGNUP] Session créée : ${response.session != null}',
+      );
+
+      if (!mounted) return;
+
+      if (response.user == null) {
+        debugPrint('[SIGNUP] Aucun utilisateur retourné');
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              "Supabase n'a retourné aucun utilisateur.",
+            ),
+          ),
+        );
+        return;
+      }
+
+      if (response.session != null) {
+        debugPrint('[SIGNUP] Inscription réussie avec session');
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Ton compte a été créé avec succès !'),
+          ),
+        );
+
+        context.go('/home');
+      } else {
+        debugPrint(
+          '[SIGNUP] Utilisateur créé, confirmation attendue',
+        );
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Compte créé ! Consulte ta boîte e-mail pour '
+              'confirmer ton adresse avant de te connecter.',
+            ),
+            duration: Duration(seconds: 6),
+          ),
+        );
+
+        context.go('/login');
+      }
+    } on AuthException catch (error, stackTrace) {
+      debugPrint('[SIGNUP] ERREUR SUPABASE : ${error.message}');
+      debugPrint('[SIGNUP] Code HTTP : ${error.statusCode}');
+      debugPrintStack(stackTrace: stackTrace);
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(error.message),
+          backgroundColor: Theme.of(context).colorScheme.error,
         ),
-      ),
-    );
+      );
+    } catch (error, stackTrace) {
+      debugPrint('[SIGNUP] ERREUR INATTENDUE : $error');
+      debugPrintStack(stackTrace: stackTrace);
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Une erreur est survenue. Vérifie ta connexion Internet.',
+          ),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   @override
@@ -83,6 +172,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     const SizedBox(height: 32),
 
+                    // Nom complet
                     TextFormField(
                       controller: _nameController,
                       textCapitalization: TextCapitalization.words,
@@ -96,12 +186,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         if (value == null || value.trim().isEmpty) {
                           return 'Saisis ton nom complet.';
                         }
-
                         return null;
                       },
                     ),
                     const SizedBox(height: 16),
 
+                    // Adresse e-mail
                     TextFormField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
@@ -129,6 +219,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     const SizedBox(height: 16),
 
+                    // Mot de passe
                     TextFormField(
                       controller: _passwordController,
                       obscureText: _hidePassword,
@@ -169,6 +260,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     const SizedBox(height: 16),
 
+                    // Confirmation du mot de passe
                     TextFormField(
                       controller: _confirmPasswordController,
                       obscureText: _hideConfirmPassword,
@@ -207,17 +299,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     const SizedBox(height: 24),
 
+                    // Bouton d'inscription
                     FilledButton(
-                      onPressed: _register,
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 14),
-                        child: Text('Créer mon compte'),
+                      onPressed: _isLoading ? null : _register,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        child: _isLoading
+                            ? const SizedBox(
+                                height: 22,
+                                width: 22,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Text('Créer mon compte'),
                       ),
                     ),
                     const SizedBox(height: 16),
 
                     TextButton(
-                      onPressed: () => context.go('/login'),
+                      onPressed: _isLoading
+                          ? null
+                          : () => context.go('/login'),
                       child: const Text(
                         'Déjà inscrit ? Se connecter',
                       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/constants/app_strings.dart';
 
 class LearningScreen extends StatelessWidget {
   const LearningScreen({super.key});
@@ -7,7 +8,7 @@ class LearningScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Scaffold(
       body: Center(
-        child: Text('Apprendre une langue'),
+        child: Text(AppStrings.learnLanguage),
       ),
     );
   }

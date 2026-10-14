@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/auth/screens/register_screen.dart';
@@ -12,9 +13,45 @@ import '../../features/profile/screens/profile_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
+// Permet à GoRouter de réagir aux changements de session Supabase.
+class _AuthRefreshNotifier extends ChangeNotifier {
+  _AuthRefreshNotifier() {
+    Supabase.instance.client.auth.onAuthStateChange.listen((_) {
+      notifyListeners();
+    });
+  }
+}
+
+final _authRefreshNotifier = _AuthRefreshNotifier();
+
 final appRouter = GoRouter(
   navigatorKey: _rootNavigatorKey,
   initialLocation: '/login',
+  refreshListenable: _authRefreshNotifier,
+
+  // Protection des routes selon la session Supabase.
+  redirect: (context, state) {
+    final session = Supabase.instance.client.auth.currentSession;
+    final isLoggedIn = session != null;
+
+    final isAuthRoute =
+        state.matchedLocation == '/login' ||
+        state.matchedLocation == '/register';
+
+    // Sans session, seules les pages de connexion
+    // et d'inscription sont accessibles.
+    if (!isLoggedIn && !isAuthRoute) {
+      return '/login';
+    }
+
+    // Avec une session, inutile de revenir aux pages d'authentification.
+    if (isLoggedIn && isAuthRoute) {
+      return '/home';
+    }
+
+    return null;
+  },
+
   routes: [
     GoRoute(
       path: '/login',

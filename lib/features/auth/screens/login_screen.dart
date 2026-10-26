@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -48,9 +47,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            error.message,
-          ),
+          content: Text(error.message),
           backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
@@ -126,9 +123,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           return 'Saisis ton adresse e-mail.';
                         }
 
-                        if (!RegExp(
-                          r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
-                        ).hasMatch(email)) {
+                        if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
+                            .hasMatch(email)) {
                           return 'Saisis une adresse e-mail valide.';
                         }
 

@@ -1,4 +1,3 @@
-
 class AppStrings {
   AppStrings._();
 
@@ -28,15 +27,13 @@ class AppStrings {
   static const String profileTitle = 'Mon profil';
   static const String logout = 'Se déconnecter';
   static const String loggingOut = 'Déconnexion en cours...';
-  static const String logoutErrorPrefix =
-      'Impossible de se déconnecter : ';
+  static const String logoutErrorPrefix = 'Impossible de se déconnecter : ';
   static const String logoutUnexpectedError =
       'Une erreur est survenue pendant la déconnexion.';
 
   // Chargement du profil
   static const String profileLoading = 'Chargement du profil...';
-  static const String profileLoadError =
-      'Impossible de charger le profil.';
+  static const String profileLoadError = 'Impossible de charger le profil.';
   static const String profileName = 'Nom complet';
   static const String profileEmail = 'Adresse e-mail';
 
@@ -55,8 +52,7 @@ class AppStrings {
   // Enregistrement du profil
   static const String saveProfile = 'Enregistrer mon profil';
   static const String savingProfile = 'Enregistrement en cours...';
-  static const String profileSaveSuccess =
-      'Profil mis à jour avec succès !';
+  static const String profileSaveSuccess = 'Profil mis à jour avec succès !';
   static const String profileSaveError =
       'Impossible d’enregistrer les modifications.';
 }

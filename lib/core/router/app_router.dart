@@ -1,3 +1,4 @@
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -5,119 +6,141 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/auth/screens/register_screen.dart';
-import '../../features/home/home_screen.dart';
-import '../../features/friends/screens/friends_screen.dart';
 import '../../features/chat/screens/chat_screen.dart';
+import '../../features/friends/screens/friends_screen.dart';
+import '../../features/home/screens/home_screen.dart';
 import '../../features/learning/screens/learning_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
-// Permet à GoRouter de réagir aux changements de session Supabase.
-class _AuthRefreshNotifier extends ChangeNotifier {
-  _AuthRefreshNotifier() {
-    Supabase.instance.client.auth.onAuthStateChange.listen((_) {
-      notifyListeners();
-    });
+/// État d'authentification contrôlable dans les tests.
+class TestAuthState extends ChangeNotifier {
+  TestAuthState({required bool isLoggedIn}) : _isLoggedIn = isLoggedIn;
+
+  bool _isLoggedIn;
+
+  bool get isLoggedIn => _isLoggedIn;
+
+  void update(bool value) {
+    if (_isLoggedIn == value) return;
+
+    _isLoggedIn = value;
+    notifyListeners();
   }
 }
 
-final _authRefreshNotifier = _AuthRefreshNotifier();
+/// Écoute les changements d'authentification de Supabase.
+class SupabaseAuthRefreshNotifier extends ChangeNotifier {
+  SupabaseAuthRefreshNotifier() {
+    _subscription = Supabase.instance.client.auth.onAuthStateChange.listen((_) {
+      notifyListeners();
+    });
+  }
 
-final appRouter = GoRouter(
-  navigatorKey: _rootNavigatorKey,
-  initialLocation: '/login',
-  refreshListenable: _authRefreshNotifier,
+  // dynamic évite de dépendre directement du type AuthState.
+  late final StreamSubscription<dynamic> _subscription;
 
-  // Protection des routes selon la session Supabase.
-  redirect: (context, state) {
-    final session = Supabase.instance.client.auth.currentSession;
-    final isLoggedIn = session != null;
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
+  }
+}
 
-    final isAuthRoute =
-        state.matchedLocation == '/login' ||
-        state.matchedLocation == '/register';
+/// Crée le routeur de l'application.
+///
+/// Dans les tests, on peut injecter un TestAuthState pour ne pas
+/// dépendre d'une instance Supabase initialisée.
+GoRouter createAppRouter({TestAuthState? testAuthState}) {
+  final refreshNotifier = testAuthState ?? SupabaseAuthRefreshNotifier();
 
-    // Sans session, seules les pages de connexion
-    // et d'inscription sont accessibles.
-    if (!isLoggedIn && !isAuthRoute) {
-      return '/login';
-    }
+  return GoRouter(
+    navigatorKey: _rootNavigatorKey,
+    initialLocation: '/login',
+    refreshListenable: refreshNotifier,
+    redirect: (context, state) {
+      final isLoggedIn =
+          testAuthState?.isLoggedIn ??
+          (Supabase.instance.client.auth.currentSession != null);
 
-    // Avec une session, inutile de revenir aux pages d'authentification.
-    if (isLoggedIn && isAuthRoute) {
-      return '/home';
-    }
+      final isAuthRoute =
+          state.matchedLocation == '/login' ||
+          state.matchedLocation == '/register';
 
-    return null;
-  },
+      if (!isLoggedIn && !isAuthRoute) {
+        return '/login';
+      }
 
-  routes: [
-    GoRoute(
-      path: '/login',
-      builder: (context, state) => const LoginScreen(),
-    ),
-    GoRoute(
-      path: '/register',
-      builder: (context, state) => const RegisterScreen(),
-    ),
-    StatefulShellRoute.indexedStack(
-      builder: (context, state, navigationShell) {
-        return MainNavigationScreen(
-          navigationShell: navigationShell,
-        );
-      },
-      branches: [
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: '/home',
-              builder: (context, state) => const HomeScreen(),
-            ),
-          ],
-        ),
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: '/friends',
-              builder: (context, state) => const FriendsScreen(),
-            ),
-          ],
-        ),
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: '/chat',
-              builder: (context, state) => const ChatScreen(),
-            ),
-          ],
-        ),
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: '/learning',
-              builder: (context, state) => const LearningScreen(),
-            ),
-          ],
-        ),
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: '/profile',
-              builder: (context, state) => const ProfileScreen(),
-            ),
-          ],
-        ),
-      ],
-    ),
-  ],
-);
+      if (isLoggedIn && isAuthRoute) {
+        return '/home';
+      }
+
+      return null;
+    },
+    routes: [
+      GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
+      GoRoute(
+        path: '/register',
+        builder: (context, state) => const RegisterScreen(),
+      ),
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) {
+          return MainNavigationScreen(navigationShell: navigationShell);
+        },
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/home',
+                builder: (context, state) => const HomeScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/friends',
+                builder: (context, state) => const FriendsScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/chat',
+                builder: (context, state) => const ChatScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/learning',
+                builder: (context, state) => const LearningScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/profile',
+                builder: (context, state) => const ProfileScreen(),
+              ),
+            ],
+          ),
+        ],
+      ),
+    ],
+  );
+}
+
+/// Initialisation différée : Supabase ne sera utilisé que lorsque
+/// l'application accèdera réellement à appRouter.
+late final GoRouter appRouter = createAppRouter();
 
 class MainNavigationScreen extends StatelessWidget {
-  const MainNavigationScreen({
-    required this.navigationShell,
-    super.key,
-  });
+  const MainNavigationScreen({super.key, required this.navigationShell});
 
   final StatefulNavigationShell navigationShell;
 
@@ -136,27 +159,27 @@ class MainNavigationScreen extends StatelessWidget {
         destinations: const [
           NavigationDestination(
             icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home_rounded),
+            selectedIcon: Icon(Icons.home),
             label: 'Accueil',
           ),
           NavigationDestination(
-            icon: Icon(Icons.people_outline_rounded),
-            selectedIcon: Icon(Icons.people_rounded),
-            label: 'Amis',
+            icon: Icon(Icons.people_outline),
+            selectedIcon: Icon(Icons.people),
+            label: 'Friends',
           ),
           NavigationDestination(
-            icon: Icon(Icons.chat_bubble_outline_rounded),
-            selectedIcon: Icon(Icons.chat_rounded),
+            icon: Icon(Icons.chat_bubble_outline),
+            selectedIcon: Icon(Icons.chat_bubble),
             label: 'Chat',
           ),
           NavigationDestination(
             icon: Icon(Icons.school_outlined),
-            selectedIcon: Icon(Icons.school_rounded),
+            selectedIcon: Icon(Icons.school),
             label: 'Apprendre',
           ),
           NavigationDestination(
-            icon: Icon(Icons.person_outline_rounded),
-            selectedIcon: Icon(Icons.person_rounded),
+            icon: Icon(Icons.person_outline),
+            selectedIcon: Icon(Icons.person),
             label: 'Profil',
           ),
         ],

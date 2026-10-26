@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../core/constants/app_strings.dart';
+import '../../../core/constants/app_strings.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -26,16 +26,14 @@ class HomeScreen extends StatelessWidget {
         children: [
           Text(
             AppStrings.welcome,
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+            style: Theme.of(context).textTheme.headlineMedium
+                ?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           Text(
             AppStrings.learningSubtitle,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: Colors.grey.shade600,
-                ),
+            style: Theme.of(context).textTheme.bodyLarge
+                ?.copyWith(color: Colors.grey.shade600),
           ),
           const SizedBox(height: 24),
           Card(
@@ -52,9 +50,8 @@ class HomeScreen extends StatelessWidget {
                   const SizedBox(height: 16),
                   Text(
                     AppStrings.dailyChallenge,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                    style: Theme.of(context).textTheme.titleLarge
+                        ?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   const Text(AppStrings.dailyChallengeDescription),

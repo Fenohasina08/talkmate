@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -45,16 +44,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final response = await Supabase.instance.client.auth.signUp(
         email: _emailController.text.trim(),
         password: _passwordController.text,
-        data: {
-          'full_name': _nameController.text.trim(),
-        },
+        data: {'full_name': _nameController.text.trim()},
       );
 
       debugPrint('[SIGNUP] Requête terminée');
       debugPrint('[SIGNUP] User ID : ${response.user?.id}');
-      debugPrint(
-        '[SIGNUP] Session créée : ${response.session != null}',
-      );
+      debugPrint('[SIGNUP] Session créée : ${response.session != null}');
 
       if (!mounted) return;
 
@@ -63,9 +58,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text(
-              "Supabase n'a retourné aucun utilisateur.",
-            ),
+            content: Text("Supabase n'a retourné aucun utilisateur."),
           ),
         );
         return;
@@ -75,16 +68,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
         debugPrint('[SIGNUP] Inscription réussie avec session');
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Ton compte a été créé avec succès !'),
-          ),
+          const SnackBar(content: Text('Ton compte a été créé avec succès !')),
         );
 
         context.go('/home');
       } else {
-        debugPrint(
-          '[SIGNUP] Utilisateur créé, confirmation attendue',
-        );
+        debugPrint('[SIGNUP] Utilisateur créé, confirmation attendue');
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -136,9 +125,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Créer un compte'),
-      ),
+      appBar: AppBar(title: const Text('Créer un compte')),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -208,9 +195,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           return 'Saisis ton adresse e-mail.';
                         }
 
-                        if (!RegExp(
-                          r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
-                        ).hasMatch(email)) {
+                        if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
+                            .hasMatch(email)) {
                           return 'Saisis une adresse e-mail valide.';
                         }
 
@@ -274,8 +260,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               : 'Masquer le mot de passe',
                           onPressed: () {
                             setState(() {
-                              _hideConfirmPassword =
-                                  !_hideConfirmPassword;
+                              _hideConfirmPassword = !_hideConfirmPassword;
                             });
                           },
                           icon: Icon(
@@ -318,12 +303,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     const SizedBox(height: 16),
 
                     TextButton(
-                      onPressed: _isLoading
-                          ? null
-                          : () => context.go('/login'),
-                      child: const Text(
-                        'Déjà inscrit ? Se connecter',
-                      ),
+                      onPressed: _isLoading ? null : () => context.go('/login'),
+                      child: const Text('Déjà inscrit ? Se connecter'),
                     ),
                   ],
                 ),

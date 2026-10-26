@@ -4,8 +4,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'app/app.dart';
 
 const supabaseUrl = String.fromEnvironment('SUPABASE_URL');
-const supabasePublishableKey =
-    String.fromEnvironment('SUPABASE_PUBLISHABLE_KEY');
+const supabasePublishableKey = String.fromEnvironment(
+  'SUPABASE_PUBLISHABLE_KEY',
+);
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

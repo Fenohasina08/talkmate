@@ -48,9 +48,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       final profile = await client
           .from('profiles')
-          .select(
-            'full_name, native_language, learning_language',
-          )
+          .select('full_name, native_language, learning_language')
           .eq('id', user.id)
           .maybeSingle();
 
@@ -58,10 +56,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       setState(() {
         _fullName = profile?['full_name'] as String?;
-        _nativeLanguage =
-            profile?['native_language'] as String?;
-        _learningLanguage =
-            profile?['learning_language'] as String?;
+        _nativeLanguage = profile?['native_language'] as String?;
+        _learningLanguage = profile?['learning_language'] as String?;
         _isLoading = false;
       });
     } catch (_) {
@@ -72,9 +68,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(AppStrings.profileLoadError),
-        ),
+        const SnackBar(content: Text(AppStrings.profileLoadError)),
       );
     }
   }
@@ -92,24 +86,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
 
     // Vérifie que les deux langues sont sélectionnées.
-    if (_nativeLanguage == null ||
-        _learningLanguage == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(AppStrings.selectLanguage),
-        ),
-      );
+    if (_nativeLanguage == null || _learningLanguage == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text(AppStrings.selectLanguage)));
       return;
     }
 
     // Empêche de choisir la même langue deux fois.
     if (_nativeLanguage == _learningLanguage) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            AppStrings.differentLanguagesError,
-          ),
-        ),
+        const SnackBar(content: Text(AppStrings.differentLanguagesError)),
       );
       return;
     }
@@ -121,33 +108,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       await client.from('profiles').upsert({
         'id': user.id,
-        'full_name': _fullName ??
-            user.userMetadata?['full_name'] as String?,
+        'full_name': _fullName ?? user.userMetadata?['full_name'] as String?,
         'native_language': _nativeLanguage,
         'learning_language': _learningLanguage,
-        'updated_at': DateTime.now()
-            .toUtc()
-            .toIso8601String(),
+        'updated_at': DateTime.now().toUtc().toIso8601String(),
       });
 
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            AppStrings.profileSaveSuccess,
-          ),
-        ),
+        const SnackBar(content: Text(AppStrings.profileSaveSuccess)),
       );
     } catch (_) {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            AppStrings.profileSaveError,
-          ),
-        ),
+        const SnackBar(content: Text(AppStrings.profileSaveError)),
       );
     } finally {
       if (mounted) {
@@ -189,9 +165,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text(
-            AppStrings.logoutUnexpectedError,
-          ),
+          content: const Text(AppStrings.logoutUnexpectedError),
           backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
@@ -211,22 +185,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     // Affiche un indicateur pendant le chargement.
     if (_isLoading) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(AppStrings.profileTitle),
-      ),
+      appBar: AppBar(title: const Text(AppStrings.profileTitle)),
       body: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(
-            maxWidth: 480,
-          ),
+          constraints: const BoxConstraints(maxWidth: 480),
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
             child: Column(
@@ -235,13 +201,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 // Avatar du profil.
                 CircleAvatar(
                   radius: 44,
-                  backgroundColor:
-                      theme.colorScheme.primaryContainer,
+                  backgroundColor: theme.colorScheme.primaryContainer,
                   child: Icon(
                     Icons.person_rounded,
                     size: 48,
-                    color: theme
-                        .colorScheme.onPrimaryContainer,
+                    color: theme.colorScheme.onPrimaryContainer,
                   ),
                 ),
 
@@ -251,8 +215,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Text(
                   AppStrings.myProfile,
                   textAlign: TextAlign.center,
-                  style: theme.textTheme.headlineSmall
-                      ?.copyWith(
+                  style: theme.textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -260,10 +223,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 24),
 
                 // Nom complet.
-                Text(
-                  AppStrings.profileName,
-                  style: theme.textTheme.labelLarge,
-                ),
+                Text(AppStrings.profileName, style: theme.textTheme.labelLarge),
 
                 const SizedBox(height: 6),
 
@@ -285,10 +245,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                 // Sélection de la langue maternelle.
                 DropdownButtonFormField<String>(
-                  initialValue:
-                      _languages.contains(_nativeLanguage)
-                          ? _nativeLanguage
-                          : null,
+                  initialValue: _languages.contains(_nativeLanguage)
+                      ? _nativeLanguage
+                      : null,
                   decoration: const InputDecoration(
                     labelText: AppStrings.nativeLanguage,
                     border: OutlineInputBorder(),
@@ -310,10 +269,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                 // Sélection de la langue à apprendre.
                 DropdownButtonFormField<String>(
-                  initialValue:
-                      _languages.contains(_learningLanguage)
-                          ? _learningLanguage
-                          : null,
+                  initialValue: _languages.contains(_learningLanguage)
+                      ? _learningLanguage
+                      : null,
                   decoration: const InputDecoration(
                     labelText: AppStrings.learningLanguage,
                     border: OutlineInputBorder(),
@@ -340,9 +298,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ? const SizedBox(
                           width: 18,
                           height: 18,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                          ),
+                          child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : const Icon(Icons.save_rounded),
                   label: Text(
@@ -356,13 +312,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                 // Bouton de déconnexion.
                 OutlinedButton.icon(
-                  onPressed:
-                      _isLoggingOut ? null : _logout,
+                  onPressed: _isLoggingOut ? null : _logout,
                   icon: const Icon(Icons.logout_rounded),
                   label: Text(
-                    _isLoggingOut
-                        ? AppStrings.loggingOut
-                        : AppStrings.logout,
+                    _isLoggingOut ? AppStrings.loggingOut : AppStrings.logout,
                   ),
                 ),
               ],
